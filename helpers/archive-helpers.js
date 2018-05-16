@@ -24,14 +24,31 @@ exports.initialize = function(pathsObj) {
 
 // The following function names are provided to you to suggest how you might
 // modularize your code. Keep it clean!
-
-exports.readListOfUrls = function(callback) {
+exports.readListOfUrls = function(callback) { //returns a Array of urls
+  fs.readFile(this.paths.list, 'utf8', function(err, data) { //reads the urls in the textfile at paths.list
+    if (err) { //maybe wrong path
+      console.error(err);
+      return;
+    } // else this is data and we split by new line.
+    var urlsArray = data.split('\n'); //call back was in test and had the expect tester 
+    callback(urlsArray); //pass call back on the urls we split.
+  });
 };
 
-exports.isUrlInList = function(url, callback) {
+exports.isUrlInList = function(url, callback) { //returns a boolean
+  // now entering callback hell
+  this.readListOfUrls(function(urlsArray) {
+    var urlInList = false;
+    if (urlsArray.indexOf(url) !== -1) {
+      urlInList = true;
+    }
+    callback(urlInList);
+  });
+  
 };
 
-exports.addUrlToList = function(url, callback) {
+exports.addUrlToList = function(url, callback) { 
+  
 };
 
 exports.isUrlArchived = function(url, callback) {
