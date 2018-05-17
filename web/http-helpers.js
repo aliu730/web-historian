@@ -30,14 +30,32 @@ exports.serveIndex = function(res) {
   });
 };
 
-// Serve the loading.html file
-exports.serveLoading = function() {
-  
-};
-
 // Serve the actual archived assets of the site in question
-exports.serveArchive = function() {
-  
+exports.serveArchive = function(url, res) { 
+  var urlHtmlFile = archive.paths.archivedSites + '/' + url;
+  fs.readFile(urlHtmlFile, function(err, data) {
+    if (err) {
+      console.log(err);
+      return;
+    }
+    res.end(data);
+    return;
+  });
 };
 
 // As you progress, keep thinking about what helper functions you can put here!
+
+
+// Serve the loading.html file
+exports.serveLoadingPage = function(res) {
+  var indexHtmlFile = archive.paths.siteAssets + '/loading.html';
+  fs.readFile(indexHtmlFile, function(err, data) {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    
+    res.end(data);
+    return;
+  });
+};

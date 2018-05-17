@@ -24,13 +24,16 @@ exports.initialize = function(pathsObj) {
 
 // The following function names are provided to you to suggest how you might
 // modularize your code. Keep it clean!
+
 exports.readListOfUrls = function(callback) { //returns a Array of urls
   fs.readFile(this.paths.list, 'utf8', function(err, data) { //reads the urls in the textfile at paths.list
     if (err) { //maybe wrong path
       console.error(err);
       return;
     } // else this is data and we split by new line.
-    var urlsArray = data.split('\n'); //call back was in test and had the expect tester 
+    var urlsArray = data.split('\n'); //call back was in test and had the expect tester
+    urlsArray = urlsArray.filter( url => url.length );
+        
     callback(urlsArray); //pass call back on the urls we split.
   });
 };
@@ -47,12 +50,56 @@ exports.isUrlInList = function(url, callback) { //returns a boolean
   
 };
 
-exports.addUrlToList = function(url, callback) { 
+exports.addUrlToList = function(url, callback) {
+  
+  // moar callback hell
+  this.readListOfUrls( (urlsArray) => {
+    if (urlsArray.indexOf(url) === -1) {
+      urlsArray.push(url);
+    }
+    
+    var urlsString = urlsArray.join('\n');
+    
+    fs.writeFile(this.paths.list, urlsString, 'utf8', function(err) {
+      if (err) {
+        console.log(err);
+        return;
+      }
+      callback();
+    });
+  });
   
 };
 
 exports.isUrlArchived = function(url, callback) {
+  fs.exists(this.paths.archivedSites + '/' + url, function(exists) {
+    callback(exists, url);
+  });
 };
 
 exports.downloadUrls = function(urls) {
+  //loop through urls
+  //check if they are already archived
+  //if not then we download to our path
+
+  var callback = (urlExists, url) => {
+    if (urlExists) {
+      return;
+    }
+    
+    fs.mkdir(this.paths.archivedSites + '/' + url, () => {
+      var file = fs.createWriteStream(this.paths.archivedSites + '/' + url + '/index.html');
+      http.get('http://' + url, function(res) {
+        res.pipe(file);
+        file.on('finish', function () {
+          file.close();
+        });
+      });  
+      
+    });
+    
+  };
+  for (var i = 0; i < urls.length; i++) {
+    this.isUrlArchived(urls[i], callback);
+  }
 };
