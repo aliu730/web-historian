@@ -19,12 +19,13 @@ exports.serveAssets = function(res, asset, callback) {
 // Serve the basic index.html file which contains our form
 exports.serveIndex = function(res) {
   var indexHtmlFile = archive.paths.siteAssets + '/index.html';
-  fs.readFile(indexHtmlFile, function(err, data) {
+  fs.readFile(indexHtmlFile, (err, data) => {
     if (err) {
       console.error(err);
       return;
     }
     
+    res.writeHead(200, this.headers);
     res.end(data);
     return;
   });
@@ -33,11 +34,13 @@ exports.serveIndex = function(res) {
 // Serve the actual archived assets of the site in question
 exports.serveArchive = function(url, res) { 
   var urlHtmlFile = archive.paths.archivedSites + '/' + url;
-  fs.readFile(urlHtmlFile, function(err, data) {
+  fs.readFile(urlHtmlFile, (err, data) => {
     if (err) {
       console.log(err);
       return;
     }
+
+    res.writeHead(200, this.headers);
     res.end(data);
     return;
   });
@@ -49,12 +52,13 @@ exports.serveArchive = function(url, res) {
 // Serve the loading.html file
 exports.serveLoadingPage = function(res) {
   var indexHtmlFile = archive.paths.siteAssets + '/loading.html';
-  fs.readFile(indexHtmlFile, function(err, data) {
+  fs.readFile(indexHtmlFile, (err, data) => {
     if (err) {
       console.error(err);
       return;
     }
     
+    res.writeHead(200, this.headers);
     res.end(data);
     return;
   });
@@ -63,13 +67,13 @@ exports.serveLoadingPage = function(res) {
 // Serve the 404.html file
 exports.serveFileNotFoundPage = function(res) {
   var indexHtmlFile = archive.paths.siteAssets + '/404.html';
-  fs.readFile(indexHtmlFile, function(err, data) {
+  fs.readFile(indexHtmlFile, (err, data) => {
     if (err) {
       console.error(err);
       return;
     }
 
-    res.statusCode = 404;
+    res.writeHead(404, this.headers);
     res.end(data);
     return;
   });

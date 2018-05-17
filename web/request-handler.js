@@ -22,7 +22,15 @@ exports.handleRequest = function (req, res) {
 
         var post = qs.parse(body);
         var siteUrl = post['url'];
-        //console.log(siteUrl);
+
+        var redirectHeaderAndEndRes = () => {
+          var resHeaders = httpHelpers.headers;
+          resHeaders['Location'] = '/' + siteUrl;
+
+          res.writeHead(302, resHeaders);
+          // THIS: res.header.location, WON'T WORK! YOU MUST USE .writeHead()
+          res.end();
+        };
 
         // if post method
         // check if url is contained in sites.txt
@@ -30,16 +38,12 @@ exports.handleRequest = function (req, res) {
           // if not inside
           if (!existsInList) {
             // write to file inside the sites.text the url
-
             archive.addUrlToList(siteUrl, function() {
-              // show loading
-              res.statusCode = 302;
-              httpHelpers.serveLoadingPage(res);
+              redirectHeaderAndEndRes();
             });
           // if so do nothing
           } else {
-            // show loading
-            httpHelpers.serveLoadingPage(res);
+            redirectHeaderAndEndRes();
           }
         });
 
