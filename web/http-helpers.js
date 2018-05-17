@@ -59,3 +59,18 @@ exports.serveLoadingPage = function(res) {
     return;
   });
 };
+
+// Serve the 404.html file
+exports.serveFileNotFoundPage = function(res) {
+  var indexHtmlFile = archive.paths.siteAssets + '/404.html';
+  fs.readFile(indexHtmlFile, function(err, data) {
+    if (err) {
+      console.error(err);
+      return;
+    }
+
+    res.statusCode = 404;
+    res.end(data);
+    return;
+  });
+};

@@ -1,5 +1,6 @@
 var fs = require('fs');
 var path = require('path');
+var http = require('http');
 var _ = require('underscore');
 
 /*
@@ -33,7 +34,7 @@ exports.readListOfUrls = function(callback) { //returns a Array of urls
     } // else this is data and we split by new line.
     var urlsArray = data.split('\n'); //call back was in test and had the expect tester
     urlsArray = urlsArray.filter( url => url.length );
-        
+
     callback(urlsArray); //pass call back on the urls we split.
   });
 };
@@ -47,18 +48,18 @@ exports.isUrlInList = function(url, callback) { //returns a boolean
     }
     callback(urlInList);
   });
-  
 };
 
 exports.addUrlToList = function(url, callback) {
   
   // moar callback hell
   this.readListOfUrls( (urlsArray) => {
+    //console.log(url);
     if (urlsArray.indexOf(url) === -1) {
       urlsArray.push(url);
     }
-    
     var urlsString = urlsArray.join('\n');
+    urlsString += '\n'; // Always ensure that we have a newline at the end of the list...
     
     fs.writeFile(this.paths.list, urlsString, 'utf8', function(err) {
       if (err) {
@@ -87,15 +88,12 @@ exports.downloadUrls = function(urls) {
       return;
     }
     
-    fs.mkdir(this.paths.archivedSites + '/' + url, () => {
-      var file = fs.createWriteStream(this.paths.archivedSites + '/' + url + '/index.html');
-      http.get('http://' + url, function(res) {
-        res.pipe(file);
-        file.on('finish', function () {
-          file.close();
-        });
-      });  
-      
+    var file = fs.createWriteStream(this.paths.archivedSites + '/' + url);
+    http.get('http://' + url, function(res) {
+      res.pipe(file);
+      file.on('finish', function () {
+        file.close();
+      });
     });
     
   };

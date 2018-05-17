@@ -1,17 +1,59 @@
 var path = require('path');
 var url = require('url');
 var fs = require('fs');
+var qs = require('querystring');
 var archive = require('../helpers/archive-helpers');
 var httpHelpers = require('./http-helpers.js');
 // require more modules/folders here!
 
 exports.handleRequest = function (req, res) {
   var parsedUrl = url.parse(req.url);
+
   if (parsedUrl.path === '/') {
-    httpHelpers.serveIndex(res);
+
+    if (req.method === 'POST') {
+
+      var body = '';
+      req.on('data', function(data) {
+        body += data;
+      });
+
+      req.on('end', function() {
+
+        var post = qs.parse(body);
+        var siteUrl = post['url'];
+        //console.log(siteUrl);
+
+        // if post method
+        // check if url is contained in sites.txt
+        archive.isUrlInList(siteUrl, function(existsInList) {
+          // if not inside
+          if (!existsInList) {
+            // write to file inside the sites.text the url
+
+            archive.addUrlToList(siteUrl, function() {
+              // show loading
+              res.statusCode = 302;
+              httpHelpers.serveLoadingPage(res);
+            });
+          // if so do nothing
+          } else {
+            // show loading
+            httpHelpers.serveLoadingPage(res);
+          }
+        });
+
+      });
+
+    } else {
+      httpHelpers.serveIndex(res);
+    }
+
   } else {
+
+    var siteUrl = parsedUrl.path.slice(1);
+
     if (req.method === 'GET') {
-      var siteUrl = parsedUrl.path.slice(1);
       archive.isUrlArchived(siteUrl, function(existsInArchive, url) {
         // if exists is true
         //   serve the archive
@@ -26,16 +68,12 @@ exports.handleRequest = function (req, res) {
             if (existsInList) {
               httpHelpers.serveLoadingPage(res);
             } else {
-              archive.addUrlToList(url, function() {
-                httpHelpers.serveLoadingPage(res);
-              });
+              httpHelpers.serveFileNotFoundPage(res);
             }
           });
         }
       });
     }
-    
   }
-   
 };
 
